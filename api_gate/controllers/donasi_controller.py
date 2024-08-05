@@ -57,6 +57,7 @@ class DonationController(http.Controller):
                 donasi_list.append({
                     'id': record.id,
                     'nama_program': record.nama_program,
+                    'yayasan': record.yayasan_id.name,
                     'saldo': record.saldo,
                     'tersalurkan': record.tersalurkan,
                     'date_begin': record.date_begin.strftime('%Y-%m-%d') if record.date_begin else '',
@@ -65,6 +66,7 @@ class DonationController(http.Controller):
                     'progres_saldo_terkumpul': record.progres_saldo_terkumpul,
                     'jumlah_donatur': record.jumlah_donatur,
                     'jumlah_penerima': record.jumlah_penerima,
+                    'keterangan': record.keterangan,
                     'state': record.state,
                 })
             return request.make_response(
