@@ -50,12 +50,14 @@ class DonationController(http.Controller):
     @http.route('/api/donasi', auth='public', methods=['GET'], type='http', csrf=False)
     def get_donasi(self, **kwargs):
         try:
-            donasi_records = request.env['donasi.management'].sudo().search([])
+            # Update the search domain to include only records with state 'PUBLISH'
+            donasi_records = request.env['donasi.management'].sudo().search([('state', '=', 'publish')])
             donasi_list = []
             for record in donasi_records:
                 donasi_list.append({
                     'id': record.id,
                     'nama_program': record.nama_program,
+                    'yayasan': record.yayasan_id.name,
                     'saldo': record.saldo,
                     'tersalurkan': record.tersalurkan,
                     'date_begin': record.date_begin.strftime('%Y-%m-%d') if record.date_begin else '',
@@ -64,6 +66,7 @@ class DonationController(http.Controller):
                     'progres_saldo_terkumpul': record.progres_saldo_terkumpul,
                     'jumlah_donatur': record.jumlah_donatur,
                     'jumlah_penerima': record.jumlah_penerima,
+                    'keterangan': record.keterangan,
                     'state': record.state,
                 })
             return request.make_response(
@@ -76,6 +79,7 @@ class DonationController(http.Controller):
                 headers={'Content-Type': 'application/json'}
             )
 
+        
     @http.route('/api/master_donatur/register', type='json', auth='none', methods=['POST'], csrf=False)
     def create_master_donatur(self):
         try:
@@ -143,3 +147,37 @@ class DonationController(http.Controller):
         except Exception as e:
             _logger.error(f"Error creating master donatur: {str(e)}")
             return Response("Internal Server Error", status=500)
+
+        
+    @http.route('/api/donasi/<int:donasi_id>', auth='public', methods=['GET'], type='http', csrf=False)
+    def get_donasi_id(self, donasi_id):
+        try:
+            record = request.env['donasi.management'].sudo().browse(donasi_id)
+            if not record.exists():
+                return self._json_response({'status': 404, 'message': 'Donasi not found'})
+
+            donasi_data = {
+                'id': record.id,
+                'nama_program': record.nama_program,
+                'yayasan': record.yayasan_id.name,
+                'saldo': record.saldo,
+                'tersalurkan': record.tersalurkan,
+                'date_begin': record.date_begin.strftime('%Y-%m-%d') if record.date_begin else '',
+                'date_end': record.date_end.strftime('%Y-%m-%d') if record.date_end else '',
+                'target_terkumpul': record.target_terkumpul,
+                'progres_saldo_terkumpul': record.progres_saldo_terkumpul,
+                'jumlah_donatur': record.jumlah_donatur,
+                'jumlah_penerima': record.jumlah_penerima,
+                'keterangan': record.keterangan,
+                'state': record.state,
+            }
+
+            return self._json_response({'status': 200, 'response': donasi_data, 'message': 'Success'})
+        except Exception as e:
+            return self._json_response({'status': 500, 'message': f'Error: {str(e)}'})
+
+    def _json_response(self, data):
+        return request.make_response(
+            data=json.dumps(data),
+            headers={'Content-Type': 'application/json'}
+        )
