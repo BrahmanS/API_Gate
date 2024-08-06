@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+        <record id="res_user_inherit_form_type_user" model="ir.ui.view">
+            <field name="name">res.user.inherit.form.type.user</field>
+            <field name="model">res.users</field>
+            <field name="inherit_id" ref="base.view_users_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='login']" position="after">
+                        <div class="oe_title">
+                            <label for="tipe_user" class="oe_edit_only" string="Tipe User"/>
+                            <h2>
+                                <field name="tipe_user"/>
+                            </h2>
+                        </div>
+<!--                        <div>-->
+<!--                            <label for="email_user" class="oe_edit_only" string="Email"/>-->
+<!--                            <h2>-->
+<!--                                <field name="email_user"/>-->
+<!--                            </h2>-->
+<!--                        </div>-->
+<!--                        <div>-->
+<!--                            <label for="usermail" class="oe_edit_only" string="Email User"/>-->
+<!--                            <h2>-->
+<!--                                <field name="usermail"/>-->
+<!--                            </h2>-->
+<!--                        </div>-->
+                </xpath>
+            </field>
+        </record>
+</odoo>
