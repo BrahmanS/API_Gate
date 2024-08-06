@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="master_group_tags_view" model="ir.ui.view">
+            <field name="name">master.group.tags.view</field>
+            <field name="model">master.group.tags</field>
+            <field name="arch" type="xml">
+                <form string="Master Group Tags">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="code"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="master_group_tags_search_view" model="ir.ui.view">
+            <field name="name">master.group.tags.search.view</field>
+            <field name="model">master.group.tags</field>
+            <field name="arch" type="xml">
+                <search string="Search Group Tags">
+                    <separator orientation="vertical" />
+                    <field name="name" select="1" />
+                    <newline />
+                    <group expand="1" string="Group By">
+                        <filter string="GroupTags" name='by_name' context="{'group_by':'name'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="master_group_tags_tree_view" model="ir.ui.view">
+            <field name="name">master.group.tags.tree.view</field>
+            <field name="model">master.group.tags</field>
+            <field name="arch" type="xml">
+                <tree string="Master Group Tags">
+                    <field name="name"/>
+                    <field name="code"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_master_group_tags" model="ir.actions.act_window">
+            <field name="name">Master Group Tags</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">master.group.tags</field>
+            <field name="binding_view_types">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_master_group_tags" parent="account.account_account_menu"
+            action="action_master_group_tags" sequence="21" />
+
+</odoo>

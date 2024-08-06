@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Add "Asset Category" to supplier invoices -->
+    <record model="ir.ui.view" id="view_invoice_asset_category">
+        <field name="name">account.invoice.supplier.form</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='account_id']" position="before">
+                <field string="Asset Category" attrs="{'column_invisible': [('parent.move_type', '!=', 'in_invoice')]}"
+                       name="asset_category_id" domain="[('type','=','purchase')]" context="{'default_type':'purchase'}"/>
+            </xpath>
+            <xpath expr="//field[@name='line_ids']/tree/field[@name='account_id']" position="after">
+                <field string="Asset Category" name="asset_category_id" invisible="1"/>
+                <field name="group" />
+                <field name="group_tags" />
+            </xpath>
+	    <xpath expr="//group[@id='header_right_group']" position="inside">
+                <field
+                    name="group"
+                />
+            </xpath>
+            <xpath expr="//group[@id='header_right_group']" position="inside">
+                <field
+                    name="group_tags"
+                />
+            </xpath>
+	    <xpath expr="//group[@id='header_right_group']" position="inside">
+                <field
+                    name="invoice_reference"
+                />
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="inherit_master_group_invoice_form" model="ir.ui.view">
+            <field name="name">account.move.line.form</field>
+            <field name="model">account.move.line</field>
+            <field name="inherit_id" ref="account.view_move_line_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='quantity']" position="before">
+                    <field name="group" />
+                </xpath>
+                <xpath expr="//field[@name='group']" position="after">
+                    <field name="group_tags" />
+                </xpath>
+            </field>
+     </record>
+
+</odoo>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="master_group_view" model="ir.ui.view">
+            <field name="name">master.group.view</field>
+            <field name="model">master.group</field>
+            <field name="arch" type="xml">
+                <form string="Master Group">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="code"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="master_group_search_view" model="ir.ui.view">
+            <field name="name">master.group.search.view</field>
+            <field name="model">master.group</field>
+            <field name="arch" type="xml">
+                <search string="Search Group">
+                    <separator orientation="vertical" />
+                    <field name="name" select="1" />
+                    <newline />
+                    <group expand="1" string="Group By">
+                        <filter string="Group" name='by_name' context="{'group_by':'name'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="master_group_tree_view" model="ir.ui.view">
+            <field name="name">master.group.tree.view</field>
+            <field name="model">master.group</field>
+            <field name="arch" type="xml">
+                <tree string="Master Group">
+                    <field name="name"/>
+                    <field name="code"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_master_group" model="ir.actions.act_window">
+            <field name="name">Master Group</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">master.group</field>
+            <field name="binding_view_types">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_master_group" parent="account.account_account_menu"
+            action="action_master_group" sequence="20" />
+
+</odoo>
