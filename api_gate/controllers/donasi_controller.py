@@ -1,7 +1,8 @@
-from odoo import http
+from odoo import http, fields
 from odoo.http import request, Response
 import json
 import logging
+from datetime import datetime, timedelta
 
 _logger = logging.getLogger(__name__)
 
@@ -50,8 +51,22 @@ class DonationController(http.Controller):
     @http.route('/api/donasi', auth='public', methods=['GET'], type='http', csrf=False)
     def get_donasi(self, **kwargs):
         try:
-            # Update the search domain to include only records with state 'PUBLISH'
-            donasi_records = request.env['donasi.management'].sudo().search([('state', '=', 'publish')])
+            # Get current date
+            current_date = fields.Date.today()
+
+            # Update the search domain to include:
+            # 1. Records with state 'PUBLISH'
+            # 2. Records where date_end is greater than or equal to current date
+            # 3. Records where date_end is False (no end date)
+            # 4. Records where date_end has been updated to a future date
+            donasi_records = request.env['donasi.management'].sudo().search([
+                ('state', '=', 'publish'),
+                '|', '|',
+                ('date_end', '>=', current_date),
+                ('date_end', '=', False),
+                '&', ('date_end', '>=', current_date), ('write_date', '>', current_date - timedelta(days=1))
+            ])
+            
             donasi_list = []
             for record in donasi_records:
                 donasi_list.append({
@@ -78,7 +93,6 @@ class DonationController(http.Controller):
                 data=json.dumps({'status': 500, 'message': 'Error: %s' % str(e)}),
                 headers={'Content-Type': 'application/json'}
             )
-
         
     @http.route('/api/master_donatur/register', type='json', auth='none', methods=['POST'], csrf=False)
     def create_master_donatur(self):
