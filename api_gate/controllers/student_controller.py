@@ -1,11 +1,6 @@
 from odoo import http
 from odoo.http import request, Response
 import json
-import logging
-
-_logger = logging.getLogger(__name__)
-
-
 
 class StudentListController(http.Controller):
 
@@ -20,58 +15,6 @@ class StudentListController(http.Controller):
             })
         return Response(json.dumps(student_data), content_type='application/json')
 
-
-    @http.route('/api/student_create', type='json', auth='user', methods=['POST'])
-    def create_student(self, **post):
-        try:
-            required_fields = ['first_name', 'last_name', 'gender', 'birth_date', 'birth_place', 'nis', 'nisn', 'mobile', 'email']
-            missing_fields = [field for field in required_fields if field not in post]
-            if missing_fields:
-                return {
-                    'status': 'error',
-                    'message': 'Missing required fields',
-                    'missing_fields': missing_fields
-                }
-
-            # Log the received data
-            _logger.info("Received data: %s", json.dumps(post))
-            
-            # Combine first_name and last_name to create name
-            name = post['first_name'] + ' ' + post['last_name']
-            
-
-            Student = request.env['op.student']
-            new_student = Student.create({
-                'first_name': post['first_name'],
-                'last_name': post['last_name'],
-                'gender': post['gender'],
-                'birth_date': post['birth_date'],
-                'birth_place': post['birth_place'],
-                'nis': post['nis'],
-                'nisn': post['nisn'],
-                'mobile': post['mobile'],
-                'email': post['email'],
-                'name' : name
-            })
-            
-            # Log the created student data
-            _logger.info("Created student: %s", new_student)
-
-            # Call the method to create the user for the new student
-            new_student.create_student_user()
-            
-            return {
-                'status': 'success',
-                'message': 'Student created successfully',
-                'student_id': new_student.id
-            }
-        except Exception as e:
-            _logger.error("Error while creating student: %s", str(e))
-            return {
-                'status': 'error',
-                'message': 'An error occurred',
-                'error': str(e)
-            }
 
 class StudentCountController(http.Controller):
 

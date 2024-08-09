@@ -113,37 +113,37 @@ class MediaController(http.Controller):
 
 
 
-    @http.route('/api/get_queue_user', type='http', auth='user', methods=['GET'], csrf=False)
-    def get_media_queue(self, **kwargs):
-        try:
-            user_id = request.env.uid
-            one_week_ago = datetime.now() - timedelta(weeks=1)
+    # @http.route('/api/get_queue_user', type='http', auth='user', methods=['GET'], csrf=False)
+    # def get_media_queue(self, **kwargs):
+    #     try:
+    #         user_id = request.env.uid
+    #         one_week_ago = datetime.now() - timedelta(weeks=1)
             
-            media_queue_records = request.env['op.media.queue'].sudo().search([
-                ('user_id', '=', user_id),
-                ('date_to', '>=', one_week_ago.strftime('%Y-%m-%d'))
-            ])
+    #         media_queue_records = request.env['op.media.queue'].sudo().search([
+    #             ('user_id', '=', user_id),
+    #             ('date_to', '>=', one_week_ago.strftime('%Y-%m-%d'))
+    #         ])
 
-            media_queue_list = []
-            for queue in media_queue_records:
-                queue_data = {
-                    'id': queue.id,
-                    'sequence_no': queue.name,
-                    'partner_id': queue.user_id.partner_id.id,
-                    'partner_name': queue.user_id.partner_id.name,
-                    'media_id': queue.media_id.id,
-                    'media_name': queue.media_id.name,
-                    'date_from': queue.date_from.strftime('%Y-%m-%d') if queue.date_from else None,
-                    'date_to': queue.date_to.strftime('%Y-%m-%d') if queue.date_to else None,
-                    'state': queue.state,
-                    'active': queue.active,
-                }
-                media_queue_list.append(queue_data)
+    #         media_queue_list = []
+    #         for queue in media_queue_records:
+    #             queue_data = {
+    #                 'id': queue.id,
+    #                 'sequence_no': queue.name,
+    #                 'partner_id': queue.user_id.partner_id.id,
+    #                 'partner_name': queue.user_id.partner_id.name,
+    #                 'media_id': queue.media_id.id,
+    #                 'media_name': queue.media_id.name,
+    #                 'date_from': queue.date_from.strftime('%Y-%m-%d') if queue.date_from else None,
+    #                 'date_to': queue.date_to.strftime('%Y-%m-%d') if queue.date_to else None,
+    #                 'state': queue.state,
+    #                 'active': queue.active,
+    #             }
+    #             media_queue_list.append(queue_data)
 
-            return request.make_response(json.dumps({'status': 200, 'data': media_queue_list}), headers={'Content-Type': 'application/json'})
+    #         return request.make_response(json.dumps({'status': 200, 'data': media_queue_list}), headers={'Content-Type': 'application/json'})
 
-        except Exception as e:
-            return request.make_response(json.dumps({'status': 500, 'message': str(e)}), headers={'Content-Type': 'application/json'})
+    #     except Exception as e:
+    #         return request.make_response(json.dumps({'status': 500, 'message': str(e)}), headers={'Content-Type': 'application/json'})
 
 
 
@@ -153,6 +153,7 @@ class MediaController(http.Controller):
             user_id = request.env.uid
             media_queue_records = request.env['op.media.queue'].sudo().search([
                 ('user_id', '=', user_id),
+                # Uncomment if you want to filter by date
                 # ('date_to', '>=', one_week_ago.strftime('%Y-%m-%d'))
             ])
 
@@ -172,9 +173,19 @@ class MediaController(http.Controller):
                 }
                 media_queue_list.append(queue_data)
 
-            return request.make_response(json.dumps({'status': 200, 'data': media_queue_list}), headers={'Content-Type': 'application/json'})
+            # Calculate the total number of media items in the queue
+            total_media_count = len(media_queue_list)
+
+            response_data = {
+                'status': 200,
+                'total_media_count': total_media_count,
+                'data': media_queue_list
+            }
+
+            return request.make_response(json.dumps(response_data), headers={'Content-Type': 'application/json'})
 
         except Exception as e:
+            _logger.error(f"Error in get_media_queue: {str(e)}")
             return request.make_response(json.dumps({'status': 500, 'message': str(e)}), headers={'Content-Type': 'application/json'})
     
     
