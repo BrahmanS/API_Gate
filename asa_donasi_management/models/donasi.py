@@ -177,7 +177,7 @@ class register_penerima(models.Model):
     tipe_penerima = fields.Many2one('master.tipe.penerima', 'Tipe Penerima')
     partner_id = fields.Many2one('res.partner', 'Partner', readonly=True)
     nilai_terima = fields.Float('Nilai Terima')
-    note = fields.Char('Note')
+    note = fields.Char('Note', default='note penerima')
 
     @api.onchange('penerima_id')
     def _onchange_penerima_id(self):

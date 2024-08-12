@@ -7,3 +7,5 @@ from . import wakaf
 from . import master_wakaf_donatur
 from . import rab_wakaf
 from . import sale_order
+from . import purchase_order
+from . import res_partner
