@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   <template id="homepage" name="Homepage">
+  <t t-call="website.layout">
+    <!-- Header Section -->
+    <header id="ipmi-header" class="o_header">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-4">
+            <a href="/" class="logo">
+              <img src="ipmi/static/src/img/ipmi_logo.png" alt="ipmi institute logo" />
+            </a>
+          </div>
+          <div class="col-8">
+            <nav class="main-nav">
+              <ul class="nav-list">
+                <li><a href="/admission">Admission</a></li>
+                <li><a href="/programs">Programs</a></li>
+                <li><a href="/research">Research</a></li>
+                <li><a href="/case-center">Case Center</a></li>
+                <li><a href="#" class="menu-button">Menu</a></li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Banner Section -->
+    <div id="ipmi-banner" class="o_banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-12 text-center">
+            <img src="ipmi/static/src/img/ipmi_logo.png" alt="ipmi institute logo" />
+            <h1>WELCOME TO IPMI INSTITUTE!</h1>
+            <h2>INNOVATING GLOBAL BUSINESS EDUCATION</h2>
+            <p>Discover Your Path to Success with Our World-Class</p>
+            <h3>Bachelor dan Master Degree for Business</h3>
+            <div class="badges">
+              <img src="ipmi/static/src/img/badge1.jpeg" alt="Unggul Badge" />
+              <img src="ipmi/static/src/img/badge2.jpeg" alt="Baik Sekali Badge" />
+              <img src="ipmi/static/src/img/badge3.jpeg" alt="Baik Sekali Badge" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </t>
+</template>
+</odoo>
