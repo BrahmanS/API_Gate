@@ -44,15 +44,15 @@ class DonationController(http.Controller):
                 headers={'Content-Type': 'application/json'}
             )
         
-    @http.route('/api/wakaf/<int:donasi_id>', auth='public', methods=['GET'], type='http', csrf=False)
-    def get_donasi_id(self, donasi_id):
+    @http.route('/api/wakaf/<int:wakaf_id>', auth='public', methods=['GET'], type='http', csrf=False)
+    def get_wakaf_id(self, wakaf_id):
         try:
-            # Fetch the Donasi Management record
-            record = request.env['wakaf.management'].sudo().browse(donasi_id)
+            # Fetch the wakaf Management record
+            record = request.env['wakaf.management'].sudo().browse(wakaf_id)
             if not record.exists():
-                return self._json_response({'status': 404, 'message': 'Donasi not found'})
+                return self._json_response({'status': 404, 'message': 'wakaf not found'})
 
-            # Fetch RAB Donasi Line records
+            # Fetch RAB wakaf Line records
             rab_lines = record.rab_wakaf_ids
             rab_wakaf_data = []
             for rab in rab_lines:
@@ -69,29 +69,29 @@ class DonationController(http.Controller):
                     # Log atau tangani kasus di mana product_id tidak ada atau tidak memiliki atribut name
                     print(f"Warning: Product for RAB ID {rab.id} is missing or does not have a name attribute")
 
-            # # Fetch Register Donasi Donatur records
-            # donatur_lines = record.donatur_donasi_ids
-            # donatur_donasi_data = []
+            # # Fetch Register wakaf Donatur records
+            # donatur_lines = record.donatur_wakaf_ids
+            # donatur_wakaf_data = []
             # for donatur in donatur_lines:
             #     donatur_data = {
             #         'id': donatur.id,
             #         'product_id': donatur.product_id.id,
             #         'product_name': donatur.product_id.name,
             #         'donatur_id': donatur.donatur_id.id,
-            #         'donatur_name': donatur.donatur_id.nama_donatur,
+            #         'donatur_name': donatur.donatur_id.nama_wakaf_donatur,
             #         'email': donatur.email,
             #         'phone': donatur.phone,
             #         'infaq_date': donatur.infaq_date.strftime('%Y-%m-%d') if donatur.infaq_date else '',
-            #         'nilai_donasi': donatur.nilai_donasi,
-            #         'total_donasi': donatur.total_donasi,
+            #         'nilai_wakaf': donatur.nilai_wakaf,
+            #         'total_wakaf': donatur.total_wakaf,
             #         'note': donatur.note,
             #         'partner_id': donatur.partner_id.id,
             #         'qty': donatur.qty,
             #     }
-            #     donatur_donasi_data.append(donatur_data)
+            #     donatur_wakaf_data.append(donatur_data)
 
-            # Compile Donasi Management data
-            donasi_data = {
+            # Compile wakaf Management data
+            wakaf_data = {
                     'id': record.id,
                     'nama_program': record.nama_program,
                     # 'name': record.product_id.name,
@@ -112,10 +112,10 @@ class DonationController(http.Controller):
 
             }
 
-            return self._json_response({'status': 200, 'response': donasi_data, 'message': 'Success'})
+            return self._json_response({'status': 200, 'response': wakaf_data, 'message': 'Success'})
 
         except Exception as e:
-            _logger.error(f"Error fetching donasi data: {str(e)}")
+            _logger.error(f"Error fetching wakaf data: {str(e)}")
             return self._json_response({'status': 500, 'message': f'Error: {str(e)}'})
 
 
@@ -124,3 +124,130 @@ class DonationController(http.Controller):
             data=json.dumps(data),
             headers={'Content-Type': 'application/json'}
         )
+
+    @http.route('/api/wakaf_donatur/register', type='json', auth='public', methods=['POST'], csrf=False)
+    def create_wakaf_donatur(self):
+        try:
+            # Get JSON request data
+            data = request.jsonrequest
+
+            # Extract parameters
+            nama_wakaf_donatur = data.get('nama_wakaf_donatur')
+            email = data.get('email')
+            phone = data.get('phone')
+            gender = data.get('gender', '')
+            note = data.get('note', '')
+            nilai_wakaf = data.get('nilai_wakaf')
+            wakaf_id = data.get('wakaf_id')
+            infaq_date = data.get('infaq_date', datetime.today().strftime('%Y-%m-%d'))
+            rab_line_id = data.get('rab_line_id')
+
+            # Validate required fields
+            if not nama_wakaf_donatur or not phone or not nilai_wakaf or not wakaf_id or not infaq_date:
+                return {'status': 400, 'message': "Missing required fields"}
+
+            # Log incoming data for debugging
+            _logger.info(f"Creating donor with name: {nama_wakaf_donatur}, phone: {phone}")
+
+            partner_id = None
+
+            # Check for existing master.donatur
+            existing_donatur = request.env['master.wakaf.donatur'].sudo().search([
+                ('nama_wakaf_donatur', '=', nama_wakaf_donatur),
+                ('email', '=', email),
+                ('phone', '=', phone),
+            ], limit=1)
+
+            if existing_donatur:
+                new_donatur = existing_donatur
+                partner_id = existing_donatur.partner_id.id
+            else:
+                # Check for existing partner using sudo to bypass access rights
+                existing_partner = request.env['res.partner'].sudo().search([
+                    ('name', '=', nama_wakaf_donatur),
+                    ('phone', '=', phone),
+                ], limit=1)
+
+                if existing_partner:
+                    partner_id = existing_partner.id
+                else:
+                    # Create a new res.partner with sudo
+                    partner_values = {
+                        'name': nama_wakaf_donatur,
+                        'email': email,
+                        'phone': phone,
+                    }
+                    new_partner = request.env['res.partner'].sudo().create(partner_values)
+                    partner_id = new_partner.id
+
+                # Create master.wakaf.donatur record with sudo
+                donatur_values = {
+                    'nama_wakaf_donatur': nama_wakaf_donatur,
+                    'email': email,
+                    'phone': phone,
+                    'gender': gender,
+                    'note': note,
+                    'partner_id': partner_id,
+                }
+
+                new_donatur = request.env['master.wakaf.donatur'].sudo().create(donatur_values)
+
+            # Ensure partner_id is not None
+            if not partner_id:
+                return {'status': 500, 'message': "Failed to create or retrieve partner_id"}
+
+            rab_line = request.env['rab.wakaf.line'].sudo().search([
+                ('id', '=', rab_line_id)
+            ])
+            
+            # Create register.wakaf.donatur record with sudo
+            wakaf_values = {
+                'wakaf_id': wakaf_id,
+                'product_id': rab_line.product_id.id,
+                'wakaf_donatur_id': new_donatur.id,
+                'infaq_date': infaq_date,
+                'nilai_wakaf': nilai_wakaf,
+                'qty': 1,  # Default quantity to 1
+                'note': note,
+            }
+
+            wakaf_record = request.env['register.wakaf.donatur'].sudo().create(wakaf_values)
+
+            # Create sale order and sale order line
+            sale_order_values = {
+                'partner_id': partner_id,
+                'date_order': infaq_date,
+                'wakaf_id': wakaf_id,
+            }
+            sale_order = request.env['sale.order'].sudo().create(sale_order_values)
+
+            sale_order_line_values = {
+                'product_id': rab_line.product_id.id,
+                'name': note,
+                'price_unit': nilai_wakaf,
+                'product_uom_qty': 1,
+                'order_id': sale_order.id,
+            }
+            sale_order_line = request.env['sale.order.line'].sudo().create(sale_order_line_values)
+
+            # Confirm the sale order and create the invoice
+            sale_order.action_confirm()
+            invoice = sale_order._create_invoices()
+            if invoice:
+                invoice.write({'state': 'draft'})
+
+            # Return success response
+            return {
+                'status': 'success',
+                'message': 'Donatur, wakaf, Sale Order, and Sale Order Line created successfully',
+                'donatur_id': new_donatur.id,
+                'wakaf_record_id': wakaf_record.id,
+                'sale_order_id': sale_order.id,
+                'sale_order_line_id': sale_order_line.id,
+                'partner_id': partner_id,
+                'sale_order_name': sale_order.name
+            }
+
+        except Exception as e:
+            _logger.error(f"Error creating donatur and wakaf: {str(e)}")
+            return {'status': 500, 'message': f"Internal Server Error: {str(e)}"}
