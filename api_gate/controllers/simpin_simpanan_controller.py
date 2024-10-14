@@ -50,6 +50,65 @@ class SimPinSimpananController(http.Controller):
             return request.make_response(json.dumps(response), headers=[('Content-Type', 'application/json')])
 
 
+    @http.route('/api/simpanan/perbulan', type='http', auth='user', methods=['GET'], csrf=False)
+    def get_perbulan_simpanan(self):
+        try:
+            user = request.env.user
+            partner = request.env['res.partner'].sudo().search([('user_id', '=', user.id)])
+            member = request.env['simpin_syariah.member'].sudo().search([('partner_id', '=', partner.id)], limit=1)
+
+            if not member:
+                response = {
+                    'status': 'error',
+                    'message': 'Member not found for this user.'
+                }
+                return request.make_response(json.dumps(response), headers=[('Content-Type', 'application/json')])
+
+            # Fetch angsuran records from account.move based on member_id
+            simpanan_records = request.env['simpin_syariah.rekening'].sudo().search([
+                ('member_id', '=', member.id),
+                # ('move_type', '=', 'out_invoice')  # Ensure only angsuran records are fetched
+            ])
+
+            simpanan_data = []
+            for simpanan in simpanan_records:
+                # Fetch rekening related to the member
+                # rekening_record = request.env['simpin_syariah.rekening'].sudo().search([
+                #     ('member_id', '=', member.id)
+                # ], limit=1)  # Assuming there's one rekening per member, modify if needed
+
+                # Append angsuran data with rekening's product information
+                simpanan_data.append({
+                    'id': simpanan.id,
+                    'tanggal_simpanan': simpanan.create_date.strftime('%Y-%m-%d') if simpanan.create_date else '',  # Due date
+                    'nomor_rekening': simpanan.name,  
+                    'nama_anggota': simpanan.member_id.name,  # Total amount
+                    'jenis_akad': simpanan.akad_id.name,  # Total amount
+                    'status_pembayaran': simpanan.state,  # Payment status
+                    'total_simpanan': simpanan.balance,  # Residual amount
+                    'produk': simpanan.product_id.name,  # Residual amount
+                    # 'rekening_product_name': rekening_record.product_id.name if rekening_record else None  # Product name from rekening
+                })
+
+            # Combine response into JSON
+            response = {
+                'status': 'success',
+                'angsuran': simpanan_data
+            }
+
+            return request.make_response(json.dumps(response), headers=[('Content-Type', 'application/json')])
+
+        except Exception as e:
+            # Handle errors
+            response = {
+                'status': 'error',
+                'message': str(e)
+            }
+            return request.make_response(json.dumps(response), headers=[('Content-Type', 'application/json')])
+
+
+
+
     @http.route('/api/simpanan/angsuran', type='http', auth='user', methods=['GET'], csrf=False)
     def get_angsuran_simpanan(self):
         try:
